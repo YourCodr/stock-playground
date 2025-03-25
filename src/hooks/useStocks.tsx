@@ -157,13 +157,35 @@ export const useStockStore = create<StockState>()(
         toast.success(`Sold ${quantity} shares of ${stock.symbol}`);
         
         if (profit > 0) {
-          toast(`Profit earned: ₹${profit.toFixed(2)}`, {
-            description: "Great job on your investment!",
+          // Show congratulation message on profit
+          toast(`Profit earned: ${formatCurrency(profit)}`, {
+            description: "Congratulations on your successful trade!",
             action: {
               label: "View Portfolio",
               onClick: () => console.log("View portfolio clicked"),
             },
           });
+          
+          // Show special message for significant profits
+          if (profit > 500) {
+            toast.success("Outstanding profit! Great investment decision!", {
+              duration: 5000,
+              icon: "🏆",
+            });
+          }
+          
+          // Check if user reached the celebration milestone
+          const totalProfit = get().profitEarned + profit;
+          if (totalProfit >= 1000 && get().profitEarned < 1000) {
+            toast("🎉 You've reached ₹1,000 in profits!", {
+              description: "You can now claim your reward!",
+              action: {
+                label: "Claim Reward",
+                onClick: () => window.location.href = '/celebration',
+              },
+              duration: 10000,
+            });
+          }
         }
       },
       
@@ -205,5 +227,14 @@ export const useStockStore = create<StockState>()(
     }
   )
 );
+
+// Helper function to format currency inside this file
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 export default useStockStore;

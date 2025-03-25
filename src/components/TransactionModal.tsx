@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, TrendingUp } from 'lucide-react';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [estimatedCost, setEstimatedCost] = useState(stock.price);
   const [maxQuantity, setMaxQuantity] = useState(1);
+  const [potentialProfit, setPotentialProfit] = useState(0);
   
   const holding = getHoldingByStockId(stock.id);
   
@@ -38,9 +39,17 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
       // Max quantity based on wallet balance
       const maxPossible = Math.floor(userWalletBalance / stock.price);
       setMaxQuantity(maxPossible > 0 ? maxPossible : 1);
+      setPotentialProfit(0);
     } else {
       // Max quantity based on current holdings
       setMaxQuantity(holding ? holding.quantity : 0);
+      
+      // Calculate potential profit for sell transaction
+      if (holding) {
+        const sellValue = stock.price * quantity;
+        const buyValue = holding.averageBuyPrice * quantity;
+        setPotentialProfit(sellValue - buyValue);
+      }
     }
     
     // Reset quantity when modal opens
@@ -49,7 +58,13 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   
   useEffect(() => {
     setEstimatedCost(stock.price * quantity);
-  }, [quantity, stock.price]);
+    
+    if (transactionType === 'sell' && holding) {
+      const sellValue = stock.price * quantity;
+      const buyValue = holding.averageBuyPrice * quantity;
+      setPotentialProfit(sellValue - buyValue);
+    }
+  }, [quantity, stock.price, transactionType, holding]);
   
   const handleQuantityChange = (value: number) => {
     if (value >= 1 && value <= maxQuantity) {
@@ -123,10 +138,21 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
             )}
             
             {transactionType === 'sell' && holding && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Current Holdings</span>
-                <span className="font-medium">{holding.quantity} shares</span>
-              </div>
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Current Holdings</span>
+                  <span className="font-medium">{holding.quantity} shares</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 flex items-center">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    Potential Profit
+                  </span>
+                  <span className={`font-medium ${potentialProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatCurrency(potentialProfit)}
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </div>

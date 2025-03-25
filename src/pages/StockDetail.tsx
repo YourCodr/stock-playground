@@ -6,7 +6,7 @@ import StockChart from '@/components/StockChart';
 import TransactionModal from '@/components/TransactionModal';
 import { useStockStore } from '@/hooks/useStocks';
 import { formatCurrency, formatPercentage, getTrendClass } from '@/utils/formatters';
-import { ArrowDown, ArrowUp, Banknote, Calendar, LayoutGrid, TrendingUp, Volume } from 'lucide-react';
+import { ArrowDown, ArrowUp, Award, Banknote, Calendar, LayoutGrid, TrendingUp, Volume } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -145,6 +145,18 @@ const StockDetail = () => {
                 </p>
               </div>
             </div>
+            
+            {profitLoss > 0 && (
+              <div className="mt-4 bg-green-900/20 p-3 rounded-lg border border-green-800/30 flex items-center">
+                <Award className="w-5 h-5 text-yellow-500 mr-2" />
+                <div>
+                  <p className="text-white font-medium">Congratulations!</p>
+                  <p className="text-xs text-gray-300">
+                    You're making a profit of {formatCurrency(profitLoss)} on this investment!
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
         
